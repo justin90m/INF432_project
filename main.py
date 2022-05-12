@@ -15,13 +15,13 @@ def main(args):
         print(f"Usage: {args[0]} path_to_grid\nExiting")
         return
     filename = args[1]
-    res, d2 =         dimacs_string_from_constraints(
+    res =         dimacs_string_from_constraints(
             constraints_from_grid(
                 grid_from_file(filename)
             )
         )
-   
-    solution = solution_from_dimacs_string(res, d2)
+    
+    solution = solution_from_dimacs_string(res)
 
     if solution == "UNSAT":
         return
