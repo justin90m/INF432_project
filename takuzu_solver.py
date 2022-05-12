@@ -1,4 +1,13 @@
+import itertools
+import subprocess
+import os
+
+N = int(input("length of the grid: "))
+# add files for corresponding N values
+# add test because n has to be even
+
 def grid_from_file(file_name):
+    """Reads a grid stored in a file"""
     f=open(file_name)
     grid=[]
     grid=f.readlines()
@@ -32,9 +41,187 @@ def grid_from_file(file_name):
     f.close()   
     return grid
 
-grid = grid_from_file("fichier_test.txt")
-for i in range(len(grid)):
-    for j in range(len(grid[i])):
-        print(grid[i][j], end=' ')
+# test de la fonction
+# grid = grid_from_file("fichier_test.txt")
+# for i in range(len(grid)):
+#     for j in range(len(grid[i])):
+#         print(grid[i][j], end=' ')
+#     print()
+# print(grid)
+
+def constraints_from_grid(grid):
+    """
+    Models the sudoku into boolean constraints.
+    Variable 'x_i_j_k' is true iff the number k is in the cell (i,j).
+    Preceded by a '-' if the variable is negated.
+    So we have 9x9x9 = 729 variables.
+    All constraints wiil be expressed deirectly as FNCs.
+    Stored as list(product) of lists(clauses).
+    The principle of the pigeon hole (théorème des tiroirs) is used extensively
+    to simplify the constraints expression.
+    """
+    
+    constraints = []
+    n = len(grid)
+                
+    #(1) There must be N/2 0’s and N/2 1’s in each line (respectively column).
+    
+    # S subset of size N/2 +1  and S C= {1,...N}
+    S = list(itertools.combinations(range(1,n+1), int(n/2) + 1))
+
+    # for all i in 1.. N, ET de (S C {1,...N} ) OU de (j C S) -Xij
+    for i in range(1,n+1):
+        for subset in S: # OU de (j C S) -Xij 
+            OU = []
+            for j in subset:
+                OU += [f"-x_{i}_{j}"]
+            constraints += [OU]
+
+    # for all j in 1.. N, ET de (S C {1,...N} ) OU de (i C S) -Xij
+    for j in range(1,n+1):
+        for subset in S: # OU de (i C S) -Xij 
+            OU = []
+            for i in subset:
+                OU += [f"-x_{i}_{j}"]
+            constraints += [OU]
+
+
+    #(2) No more than two adjacent cells can contain the same number.
+    for i in range(1,n+1):
+        for j in range(1,n-1):
+            constraints+= [[f"x_{i}_{j}",f"x_{i}_{j+1}",f"x_{i}_{j+2}"]]
+            constraints+= [[f"-x_{i}_{j}",f"-x_{i}_{j+1}",f"-x_{i}_{j+2}"]]
+
+    
+    for j in range(1,n+1):
+        for i in range(1,n-1):
+            constraints+= [f"x_{i}_{j}",f"x_{i+1}_{j}",f"x_{i+2}_{j}"]
+            constraints+= [f"-x_{i}_{j}",f"-x_{i+1}_{j}",f"-x_{i+2}_{j}"]
+
+
+    #(3) There can be no identical rows or columns.
+    for i in range(1,n+1):
+        OU=[]
+        for j1 in range(1,n+1):
+            for j2 in range(1,n+1):
+                if j1 != j2:
+                    OU+= [f"z_{i}_{j1}_{i}_{j2}"]
+        constraints+= OU
+                          
+    for j in range(1,n+1):
+        OU=[]
+        for i1 in range(1,n+1):
+            for i2 in range(1,n+1):
+                if i1 != i2:
+                    OU+= [f"z_{i1}_{j}_{i2}_{j}"]
+    constraints+= OU
+
+    #(4) Each puzzle begins with several squares in the grid already filled.
+    for i in range(n):
+        for j in range(n):
+            if grid[i][j] == 0:
+                constraints += [[f"-x_{i+1}_{j+1}"]]
+            elif grid[i][j] == 1:
+                constraints += [[f"x_{i+1}_{j+1}"]]            
+
+    return constraints
+
+
+def dimacs_string_from_constraints(constraints):
+    """Numbering rule: index in list of var_name"""
+    res = ""
+    nb_var = N*N
+    nb_clauses = len(constraints)
+    res+= f"p cnf {nb_var} {nb_clauses}\n"
+
+    L = []
+    for constraint in constraints:
+        for var_name in constraint:
+            if var_name not in L:
+                L.append(var_name) 
+            
+    sorted_L = sorted(L)
+    d = dict()      # keys of d = variable names and their values are indexes
+    d2 = dict()     # keys of d2 = indexes and their values are variable names
+
+    for i,v in enumerate(L):
+        d[v] = i+1
+        d2[i+1] = v
+
+    print(d)
     print()
-print(grid)
+    print(d2)
+
+    for constraint in constraints:
+        for var_name in constraint:
+            index = d[var_name]
+            res+= str(index) + " " 
+        res+= "0\n"
+
+    return res, d, d2
+
+
+def solution_from_dimacs_string(dimacs_str):
+    # write the dimacs into a file
+    with open("constraints.dimacs.tmp", 'w') as f:
+        f.write(dimacs_str)
+    # run a solver (here minisat)
+    subprocess.run(["minisat", "constraints.dimacs.tmp", "out.tmp"], shell=True, check=True)
+    with open("out.tmp", 'r') as output:
+        solution_as_str = output.read().splitlines()
+
+    print("hi")
+    print(solution_as_str)
+##    
+##    os.remove("constraints.dimacs.tmp")
+##    os.remove("out.tmp")
+##
+##    if solution_as_str[0] == 'UNSAT':
+##        return "UNSAT"
+    # else
+##    solution_as_str = {int(i) for i in solution_as_str[1].split()}
+##    solution_grid = [[None for _ in range(9)] for __ in range(9)]
+##    for i in range(9):
+##        for j in range(9):
+##            for k in range(1, 10):
+##                if 100 * i + 10 * j + k in solution_as_str:
+##                    solution_grid[i][j] = k
+##    return solution_grid
+    return None
+
+
+##def solution_from_dimacs_string(dimacs_str):
+##    # write the dimacs into a file
+##    with open("constraints.dimacs.tmp", 'w') as f:
+##        f.write(dimacs_str)
+##    # run a solver (here minisat)
+##    subprocess.run(["minisat", "constraints.dimacs.tmp", "out.tmp"])
+##    with open("out.tmp", 'r') as output:
+##        solution_as_str = output.read().splitlines()
+##
+##    os.remove("constraints.dimacs.tmp")
+##    os.remove("out.tmp")
+##
+##    if solution_as_str[0] == 'UNSAT':
+##        return "UNSAT"
+##    # else
+##    solution_as_str = {int(i) for i in solution_as_str[1].split()}
+##    solution_grid = [[None for _ in range(9)] for __ in range(9)]
+##    for i in range(9):
+##        for j in range(9):
+##            for k in range(1, 10):
+##                if 100 * i + 10 * j + k in solution_as_str:
+##                    solution_grid[i][j] = k
+##    return solution_grid
+
+
+# MAIN
+
+grid = [[0, None, None,0],
+        [None,None,None,1],
+        [None, None, None,None],
+        [None,None,None,1]]
+constraints_from_grid(grid)
+res,d, d2 = dimacs_string_from_constraints([['z_4_3', 'z_4_4'],['-z_1_2']])
+print(res)
+solution_from_dimacs_string(res)
