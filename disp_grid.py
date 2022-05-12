@@ -40,7 +40,7 @@ def check_grid(grid):
         return
     return mod_grid
 #checks if the given grid is a correct final grid : correct grid with only 1s and 0s and replace '0' and '1' by 0 and 1
-def check_final_grid(grid)
+def check_final_grid(grid):
     for i in range(len(grid)):
         if len(grid)!=len(grid[i]):
             print("Fianle grid not valid : number of line must be equal to number of columns.")
