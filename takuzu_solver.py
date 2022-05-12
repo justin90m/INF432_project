@@ -2,8 +2,8 @@ import itertools
 import subprocess
 import os
 
-##N = int(input("length of the grid: "))
-N = 4
+N = int(input("length of the grid: "))
+#N = 4
 # add files for corresponding N values
 # add test because n has to be even
 
@@ -77,7 +77,7 @@ def constraints_from_grid(grid):
             for j in subset:
                 OU += [f"-x_{i}_{j}"]
             constraints += [OU]
-
+    #print(constraints)
     # for all j in 1.. N, ET de (S C {1,...N} ) OU de (i C S) -Xij
     for j in range(1,n+1):
         for subset in S: # OU de (i C S) -Xij 
@@ -227,7 +227,7 @@ def constraints_from_grid(grid):
 def dimacs_string_from_constraints(constraints):
     """Numbering rule: 1 000 000 * i + 10 000 * j + 100 * i_p + j_p"""
     res = ""
-    nb_var = N*N
+    nb_var = 1000000*N+10000*N+100*N+N
     nb_clauses = len(constraints)
     res+= f"p cnf {nb_var} {nb_clauses}\n"
 
@@ -248,7 +248,7 @@ def dimacs_string_from_constraints(constraints):
                 nb = nb * (-1)
             res+= str(nb) + " " 
         res+= "0\n"
-    print(res)
+    #print(res)
     return res
 
     
@@ -269,18 +269,18 @@ def solution_from_dimacs_string(dimacs_str):
     # else
     solution_as_str = {int(i) for i in solution_as_str[1].split()}
     solution_grid = [[None for _ in range(N)] for __ in range(N)]
-    for i in range(1,N):
-        for j in range(1,N):
-            for i_p in range(1, N):
-                for j_p in range(1, N):
+    for i in range(1,N+1):
+        for j in range(1,N+1):
+            for i_p in range(1, N+1):
+                for j_p in range(1, N+1):
                     if 1000000 * i + 10000 * j + 100 * i_p + j_p in solution_as_str:
                        # z thing
                        None
                     if 1000000 * i + 10000 * j in solution_as_str:
                         solution_grid[i-1][j-1] = 1
-                    if -1000000 * i + 10000 * j + 100 * i_p + j_p in solution_as_str:
+                    if -1000000 * i - 10000 * j - 100 * i_p - j_p in solution_as_str:
                        # z thing
                        None
-                    if -1000000 * i + 10000 * j in solution_as_str:
+                    if -1000000 * i - 10000 * j in solution_as_str:
                         solution_grid[i-1][j-1] = 0
     return solution_grid
