@@ -43,7 +43,7 @@ def check_grid(grid):
 def check_final_grid(grid):
     for i in range(len(grid)):
         if len(grid)!=len(grid[i]):
-            print("Fianle grid not valid : number of line must be equal to number of columns.")
+            print("Finale grid not valid : number of line must be equal to number of columns.")
             print("ligne ", i, "has ", len(grid[i]), "elements while the grid has ", len(grid), "lines")
             return
     #Now we know that the nb_lines=nb_col
@@ -141,23 +141,30 @@ def disp_original_grid(grid):
                 return
 
 def disp_final_grid(original_grid,final_grid):
+    #grid parameters
+    original_grid=check_grid(original_grid)
+    if original_grid==None:
+        print("ERROR")
+        print("End of the program")
+        return
+    final_grid = check_final_grid(final_grid)
+    if final_grid==None:
+        print("ERROR")
+        print("End of the program")
+        return
+    #we can also check that the initial values of original_grid were not replaced in final_grid
+    grid_size=len(final_grid)
+    size_squares = GRID_HEIGHT // grid_size
+    num_size=set_size(grid_size)
+    d = (WINDOW_WIDTH-GRID_WIDTH) // 2
+    (px_grid,py_grid)=set_px_py(grid_size)
     #Window parameters
     pygame.init()
     win = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
     pygame.display.set_caption("TAKUZU")
     CLOCK = pygame.time.Clock()
     win.fill(WHITE)
-    #grid parameters
-    original_grid=check_grid(original_grid)
-    final_grid = check_final_grid(final_grid)
-    if final_grid==None:
-        return
-    grid_size=len(final_grid)
-    size_squares = GRID_HEIGHT // grid_size
-    num_size=set_size(grid_size)
     font_numbers = pygame.font.SysFont('Comic Sans Ms', num_size)
-    d = (WINDOW_WIDTH-GRID_WIDTH) // 2
-    (px_grid,py_grid)=set_px_py(grid_size)
     for i in range(grid_size+1):
         pygame.draw.line(win, (0,0,0), (d+size_squares*i, d), (d+size_squares*i,d+size_squares*grid_size), 2)
         pygame.draw.line(win, (0,0,0), (d, d+size_squares*i), (d+size_squares*grid_size, d+size_squares*i), 2)
@@ -206,5 +213,15 @@ original_grid4 = [['0','-','-','0'],
         ['-','-','-','0'],
         ['-','-','-','1'],
         ['-','-','-','-']]
-grid_file = grid_from_file("fichier_test_grid12.txt")
-disp_original_grid(grid_file)
+"""tests
+original_grid = grid_from_file("fichier_test_grid_4.txt")
+final_grid = grid_from_file("filled_grid4.txt")
+disp_final_grid(original_grid, final_grid)
+#disp_original_grid(grid_file)
+"""
+N = int(input("size of the grid : "))
+original_file = f"fichier_test_grid_{N}_sat.txt"
+original_grid = grid_from_file(original_file,N)
+final_file = f"fichier_test_grid_{N}_sat_sol.txt"
+final_grid = grid_from_file(final_file,N)
+disp_final_grid(original_grid, final_grid)
