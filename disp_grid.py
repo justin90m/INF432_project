@@ -88,11 +88,13 @@ def set_px_py(grid_size):
     if grid_size==10:
         return (-4,-2)
     if grid_size==8:
-        return (0,0)
+        return (3,10)
     if grid_size==6:
-        return (8,6)
+        return (10,13)
     if grid_size==4:
-        return (16,5)
+        return (20,20)
+    if grid_size==2:
+        return (60,60)
     return (-15,-10)
 
 def set_size(grid_size):
@@ -105,11 +107,13 @@ def set_size(grid_size):
     if grid_size==10:
         return 30
     if grid_size==8:
-        return 35
-    if grid_size==6:
         return 45
+    if grid_size==6:
+        return 55
     if grid_size==4:
-        return 65
+        return 85
+    if grid_size==2:
+        return 145
     return 20
     
 def disp_original_grid(grid):
@@ -225,7 +229,7 @@ disp_final_grid(original_grid, final_grid)
 #disp_original_grid(grid_file)
 """
 N = int(input("size of the grid : "))
-original_file = f"sol_{N}*{N}"
+original_file = f"sat_{str(N)}*{str(N)}"
 original_grid = grid_from_file(original_file)
 final_file = f"sol_{N}*{N}"
 final_grid = grid_from_file(final_file)
