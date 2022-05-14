@@ -1,9 +1,14 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+# author: Farah Seifeddine - Aime Tresor Ndayongeje - Justin Laplace - Hadi Hijazi
+# LICENSE: MIT
+
 import pygame
 import copy
 from takuzu_solver import grid_from_file
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
-original_elt_colour = (125, 125, 125)#original values are in gray
+original_elt_colour = (125, 125, 125) #original values are in gray
 WINDOW_HEIGHT = 600
 WINDOW_WIDTH = 600
 GRID_HEIGHT = 400
@@ -85,7 +90,7 @@ def set_px_py(grid_size):
     if grid_size==8:
         return (0,0)
     if grid_size==6:
-        return (5,0)
+        return (8,6)
     if grid_size==4:
         return (16,5)
     return (-15,-10)
@@ -220,8 +225,8 @@ disp_final_grid(original_grid, final_grid)
 #disp_original_grid(grid_file)
 """
 N = int(input("size of the grid : "))
-original_file = f"fichier_test_grid_{N}_sat.txt"
-original_grid = grid_from_file(original_file,N)
-final_file = f"fichier_test_grid_{N}_sat_sol.txt"
-final_grid = grid_from_file(final_file,N)
+original_file = f"sol_{N}*{N}"
+original_grid = grid_from_file(original_file)
+final_file = f"sol_{N}*{N}"
+final_grid = grid_from_file(final_file)
 disp_final_grid(original_grid, final_grid)
